@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة مركبات البلدية | محافظة جنوب الشرقية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#1a5c38;--green-dark:#0f3d26;--green-mid:#236b44;--green-light:#2e8a57;
+  --green-pale:#e8f5ee;--green-faint:#f2faf5;
+  --gold:#b8973a;--gold-light:#d4af55;--gold-pale:#fdf6e3;
+  --gray-100:#f0f2f0;--gray-200:#dde5e0;--gray-400:#8fa89a;
+  --gray-600:#4a6358;--text:#1e2e27;
+  --danger:#c0392b;--danger-pale:#fdf0ef;
+  --warn:#d4882a;--warn-pale:#fef9f0;
+  --blue:#1a5c8a;--blue-pale:#e8f0fa;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Tajawal',sans-serif;background:var(--gray-100);color:var(--text);min-height:100vh}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--green-dark);
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box{
+  background:#fff;border-radius:20px;padding:44px 40px;width:100%;max-width:400px;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center;
+}
+.login-logo{
+  width:72px;height:72px;background:var(--green-pale);border-radius:16px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
+}
+.login-logo img{width:60px;height:60px;object-fit:contain}
+.login-box h2{font-size:20px;font-weight:900;color:var(--green-dark);margin-bottom:4px}
+.login-box p{font-size:13px;color:var(--gray-400);margin-bottom:28px}
+.login-field{display:flex;flex-direction:column;gap:6px;text-align:right;margin-bottom:14px}
+.login-field label{font-size:13px;font-weight:700;color:var(--gray-600)}
+.login-field input{
+  padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:10px;
+  font-family:'Tajawal',sans-serif;font-size:14px;outline:none;transition:.2s;
+}
+.login-field input:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rgba(46,138,87,.1)}
+.login-error{color:var(--danger);font-size:13px;margin-bottom:10px;display:none}
+.login-btn{
+  width:100%;padding:13px;background:var(--green);color:#fff;border:none;
+  border-radius:10px;font-family:'Tajawal',sans-serif;font-size:16px;font-weight:700;
+  cursor:pointer;transition:.2s;margin-top:4px;
+}
+.login-btn:hover{background:var(--green-mid)}
+
+/* ── APP WRAPPER ── */
+#app-wrapper{display:none}
+
+/* ── HEADER ── */
+.app-header{
+  background:var(--green-dark);color:#fff;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;height:64px;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.header-brand{display:flex;align-items:center;gap:12px}
+.header-logo{
+  width:44px;height:44px;background:#fff;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;
+}
+.header-logo img{width:40px;height:40px;object-fit:contain}
+.site-name{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.06em}
+.app-name{font-size:15px;font-weight:700;color:#fff;line-height:1.2}
+.header-right{display:flex;align-items:center;gap:12px}
+.notif-btn{
+  position:relative;background:rgba(255,255,255,.1);border:none;
+  color:#fff;width:36px;height:36px;border-radius:8px;cursor:pointer;
+  font-size:17px;display:flex;align-items:center;justify-content:center;
+}
+.notif-dot{
+  position:absolute;top:6px;right:6px;width:8px;height:8px;
+  background:var(--gold);border-radius:50%;border:2px solid var(--green-dark);
+}
+.user-chip{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.1);border-radius:8px;padding:6px 12px;
+  font-size:13px;color:#fff;
+}
+.logout-btn{
+  background:rgba(192,57,43,.25);border:none;color:#fff;
+  padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;
+  font-family:'Tajawal',sans-serif;font-weight:600;
+}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:calc(100vh - 64px)}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;flex-shrink:0;background:var(--green-dark);
+  padding:20px 0;display:flex;flex-direction:column;gap:2px;
+  overflow-y:auto;
+}
+.sidebar-section{
+  font-size:10px;color:rgba(255,255,255,.28);letter-spacing:.1em;
+  font-weight:700;padding:14px 20px 5px;margin-top:6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:11px 20px;
+  color:rgba(255,255,255,.6);cursor:pointer;transition:.15s;font-size:14px;
+  font-weight:500;border-right:3px solid transparent;user-select:none;
+}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.11);color:#fff;border-right-color:var(--gold)}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+
+/* ── MAIN ── */
+.main{flex:1;padding:24px 28px;overflow-y:auto;min-width:0}
+
+/* ── PAGE HEAD ── */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.page-head h1{font-size:20px;font-weight:900;color:var(--green-dark)}
+.page-head p{font-size:13px;color:var(--gray-400);margin-top:2px}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stats-row-2{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{
+  background:#fff;border-radius:12px;padding:16px 18px;
+  border:1px solid var(--gray-200);display:flex;align-items:center;gap:12px;
+}
+.stat-icon{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.si-g{background:var(--green-pale)}
+.si-gold{background:var(--gold-pale)}
+.si-w{background:var(--warn-pale)}
+.si-d{background:var(--danger-pale)}
+.si-b{background:var(--blue-pale)}
+.si-gray{background:var(--gray-100)}
+.stat-num{font-size:26px;font-weight:900;color:var(--green-dark);line-height:1}
+.stat-label{font-size:11px;color:var(--gray-400);margin-top:2px}
+
+/* ── CARD ── */
+.card{background:#fff;border-radius:14px;border:1px solid var(--gray-200);overflow:hidden;margin-bottom:18px}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.card-head h2{font-size:14px;font-weight:700;color:var(--green-dark)}
+.card-body{padding:18px}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--green-dark)}
+thead th{padding:11px 12px;text-align:right;color:#fff;font-weight:600;font-size:12px;white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--gray-100);color:var(--text);vertical-align:middle}
+tbody tr:hover{background:var(--green-faint)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-avail{background:#d4edda;color:#155724}
+.b-inuse{background:#cce5ff;color:#004085}
+.b-maint{background:#fff3cd;color:#856404}
+.b-accident{background:var(--danger-pale);color:var(--danger)}
+.b-out{background:var(--gray-100);color:var(--gray-600)}
+.b-active{background:#fff3cd;color:#7d5a00}
+.b-returned{background:var(--green-pale);color:var(--green)}
+.b-open{background:#cce5ff;color:#004085}
+.b-progress{background:#fff3cd;color:#856404}
+.b-done{background:var(--green-pale);color:var(--green)}
+.b-review{background:#fff3cd;color:#856404}
+.b-repair{background:var(--danger-pale);color:var(--danger)}
+.b-closed{background:var(--green-pale);color:var(--green)}
+
+/* ── FORM ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg .full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:700;color:var(--gray-600)}
+.field input,.field select,.field textarea{
+  padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;
+  font-family:'Tajawal',sans-serif;font-size:13px;color:var(--text);
+  background:#fff;outline:none;transition:.2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--green-light);box-shadow:0 0 0 3px rgba(46,138,87,.1);
+}
+.check-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check-item{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;
+  background:var(--gray-100);border-radius:8px;cursor:pointer;font-size:13px;
+  border:1.5px solid transparent;transition:.15s;
+}
+.check-item:has(input:checked){background:var(--green-pale);border-color:var(--green-light);color:var(--green-dark)}
+.check-item input{width:15px;height:15px;accent-color:var(--green)}
+.pledge-box{
+  background:var(--gold-pale);border:1.5px solid rgba(184,151,58,.3);
+  border-radius:10px;padding:14px;margin-top:4px;
+}
+.pledge-box label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);line-height:1.6}
+.pledge-box input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--gold);flex-shrink:0}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;
+  font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;
+  border:none;cursor:pointer;transition:.2s;
+}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:var(--green-mid);transform:translateY(-1px)}
+.btn-primary:disabled{background:var(--gray-400);cursor:not-allowed;transform:none}
+.btn-danger{background:var(--danger-pale);color:var(--danger);border:1px solid rgba(192,57,43,.2)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;color:var(--green);border:1.5px solid var(--green)}
+.btn-ghost:hover{background:var(--green-pale)}
+.btn-gold{background:var(--gold-pale);color:var(--gold);border:1px solid rgba(184,151,58,.25)}
+.btn-gold:hover{background:var(--gold);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+
+/* ── MOVEMENT CARD ── */
+.mv-card{
+  background:#fff;border:1px solid var(--gray-200);border-radius:12px;
+  padding:18px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px;
+}
+.mv-icon{
+  width:42px;height:42px;background:var(--green-pale);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+}
+.mv-body{flex:1;min-width:0}
+.mv-body h3{font-size:14px;font-weight:800;color:var(--green-dark);margin-bottom:6px}
+.mv-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--gray-600)}
+.mv-meta span{display:flex;align-items:center;gap:3px}
+.mv-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(15,61,38,.55);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;padding:16px;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:#fff;border-radius:16px;padding:26px;
+  width:100%;max-width:580px;position:relative;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-xl{max-width:720px}
+.modal-head{margin-bottom:18px}
+.modal-head h3{font-size:17px;font-weight:900;color:var(--green-dark)}
+.modal-head p{font-size:12px;color:var(--gray-400);margin-top:3px}
+.modal-close{
+  position:absolute;top:14px;left:14px;
+  background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);
+}
+.modal-footer{display:flex;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--gray-200)}
+
+/* ── NOTIF PANEL ── */
+.notif-panel{
+  display:none;position:fixed;top:70px;left:20px;z-index:200;
+  background:#fff;border-radius:14px;width:320px;
+  box-shadow:0 8px 32px rgba(0,0,0,.15);border:1px solid var(--gray-200);
+  overflow:hidden;
+}
+.notif-panel.open{display:block}
+.notif-head{padding:12px 16px;background:var(--green-dark);color:#fff;font-size:13px;font-weight:700}
+.notif-item{padding:11px 16px;border-bottom:1px solid var(--gray-100);font-size:12px}
+.notif-item:last-child{border-bottom:none}
+.notif-item .nt{font-weight:700;color:var(--text);margin-bottom:2px}
+.notif-item .ns{color:var(--gray-400)}
+.notif-empty{padding:20px;text-align:center;color:var(--gray-400);font-size:13px}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);
+  background:var(--green-dark);color:#fff;padding:11px 22px;border-radius:10px;
+  font-size:13px;font-weight:600;z-index:999;transition:.35s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 6px 20px rgba(0,0,0,.2);pointer-events:none;white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:40px 20px;color:var(--gray-400)}
+.empty-icon{font-size:44px;margin-bottom:10px}
+.empty p{font-size:14px}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:30px;color:var(--gray-400);font-size:13px}
+
+/* ── STATUS DOT ── */
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:4px}
+.sd-g{background:#28a745}.sd-b{background:#007bff}
+.sd-y{background:#ffc107}.sd-r{background:var(--danger)}.sd-gray{background:#999}
+
+/* ── PRINT ── */
+@media print{
+  .sidebar,.app-header,.modal-overlay,.toast,.notif-btn,.logout-btn,
+  .btn,.nav-item,#login-screen{display:none!important}
+  .main{padding:0!important}
+  body{background:#fff!important}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  .sidebar{display:none}
+  .main{padding:14px}
+  .stats-row,.stats-row-2{grid-template-columns:1fr 1fr}
+  .fg{grid-template-columns:1fr}
+  .fg .full{grid-column:1}
+  .check-group{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN SCREEN ══════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="https://ssg.gov.om/storage/configuration-images/1699975467.1699704653.south%20al%20sharqiyah%20logo%20500.png"
+           alt="شعار المحافظة"
+           onerror="this.parentElement.innerHTML='🏛️'">
+    </div>
+    <h2>نظام إدارة مركبات البلدية</h2>
+    <p>محافظة جنوب الشرقية</p>
+    <div class="login-field">
+      <label>اسم المستخدم</label>
+      <input type="text" id="login-user" placeholder="أدخل اسم المستخدم" value="admin">
+    </div>
+    <div class="login-field">
+      <label>كلمة المرور</label>
+      <input type="password" id="login-pass" placeholder="أدخل كلمة المرور" value="">
+    </div>
+    <div class="login-error" id="login-err">❌ اسم المستخدم أو كلمة المرور غير صحيحة</div>
+    <button class="login-btn" onclick="doLogin()">تسجيل الدخول</button>
+    <p style="font-size:11px;color:#aaa;margin-top:14px">المستخدم: admin | كلمة المرور: 123456</p>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app-wrapper">
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-brand">
+    <div class="header-logo">
+      <img src="https://ssg.gov.om/storage/configuration-images/1699975467.1699704653.south%20al%20sharqiyah%20logo%20500.png"
+           alt="شعار" onerror="this.parentElement.textContent='🏛️'">
+    </div>
+    <div>
+      <div class="site-name">محافظة جنوب الشرقية — بلدية جنوب الشرقية</div>
+      <div class="app-name">نظام إدارة مركبات البلدية</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="notif-btn" onclick="toggleNotif()" title="التنبيهات">
+      🔔 <span class="notif-dot" id="notif-dot"></span>
+    </button>
+    <div class="user-chip">👤 <span id="user-label">مدير النظام</span></div>
+    <button class="logout-btn" onclick="doLogout()">تسجيل الخروج</button>
+  </div>
+</header>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-head">🔔 التنبيهات</div>
+  <div id="notif-list"><div class="notif-empty">لا توجد تنبيهات</div></div>
+</div>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-section">الرئيسية</div>
+  <div class="nav-item active" onclick="showTab('dashboard',this)"><span class="nav-icon">📊</span> لوحة التحكم</div>
+
+  <div class="sidebar-section">الحركة</div>
+  <div class="nav-item" onclick="showTab('new-movement',this)"><span class="nav-icon">➕</span> حركة جديدة</div>
+  <div class="nav-item" onclick="showTab('return-vehicle',this)"><span class="nav-icon">↩️</span> إعادة مركبة</div>
+  <div class="nav-item" onclick="showTab('movements',this)"><span class="nav-icon">📋</span> سجل الحركات</div>
+
+  <div class="sidebar-section">الإدارة</div>
+  <div class="nav-item" onclick="showTab('vehicles',this)"><span class="nav-icon">🚙</span> المركبات</div>
+  <div class="nav-item" onclick="showTab('maintenance',this)"><span class="nav-icon">🔧</span> الصيانة</div>
+  <div class="nav-item" onclick="showTab('accidents',this)"><span class="nav-icon">🚨</span> الحوادث</div>
+  <div class="nav-item" onclick="showTab('faults',this)"><span class="nav-icon">⚠️</span> الأعطال</div>
+
+  <div class="sidebar-section">التقارير</div>
+  <div class="nav-item" onclick="printSection()"><span class="nav-icon">🖨️</span> طباعة التقرير</div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ── DASHBOARD ── -->
+<div id="tab-dashboard">
+  <div class="page-head">
+    <div><h1>لوحة التحكم</h1><p id="current-date"></p></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon si-g">🚙</div><div><div class="stat-num" id="s-total">0</div><div class="stat-label">إجمالي المركبات</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-g">✅</div><div><div class="stat-num" id="s-avail">0</div><div class="stat-label">المركبات المتاحة</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-b">🔄</div><div><div class="stat-num" id="s-inuse">0</div><div class="stat-label">المركبات المستخدمة</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-w">🔧</div><div><div class="stat-num" id="s-maint">0</div><div class="stat-label">تحت الصيانة</div></div></div>
+  </div>
+  <div class="stats-row-2">
+    <div class="stat-card"><div class="stat-icon si-d">🚨</div><div><div class="stat-num" id="s-acc">0</div><div class="stat-label">المركبات المتضررة</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-gray">❌</div><div><div class="stat-num" id="s-out">0</div><div class="stat-label">خارج الخدمة</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-gold">🔄</div><div><div class="stat-num" id="s-active-mv">0</div><div class="stat-label">الحركات النشطة</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-w">🔧</div><div><div class="stat-num" id="s-open-maint">0</div><div class="stat-label">الصيانات المفتوحة</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>📋 آخر الحركات</h2></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>المركبة</th><th>الموظف</th><th>القسم</th><th>المهمة</th><th>مكان المهمة</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+        <tbody id="dash-tbody"><tr><td colspan="7" class="loading">جاري التحميل...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── NEW MOVEMENT ── -->
+<div id="tab-new-movement" style="display:none">
+  <div class="page-head"><div><h1>تسجيل حركة جديدة</h1><p>أدخل بيانات استلام المركبة مع فحص ما قبل الخروج</p></div></div>
+  <div class="card">
+    <div class="card-head"><h2>🔍 فحص المركبة قبل الخروج</h2></div>
+    <div class="card-body">
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="pre-tires"> الإطارات سليمة</label>
+        <label class="check-item"><input type="checkbox" id="pre-lights"> الأضواء تعمل</label>
+        <label class="check-item"><input type="checkbox" id="pre-ac"> المكيف يعمل</label>
+        <label class="check-item"><input type="checkbox" id="pre-oil"> مستوى الزيت مناسب</label>
+        <label class="check-item"><input type="checkbox" id="pre-water"> مستوى الماء مناسب</label>
+        <label class="check-item"><input type="checkbox" id="pre-ext"> طفاية الحريق موجودة</label>
+        <label class="check-item"><input type="checkbox" id="pre-aid"> حقيبة الإسعافات موجودة</label>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>ملاحظات الفحص</label>
+        <textarea id="pre-notes" rows="2" placeholder="أي ملاحظات على حالة المركبة..."></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>📝 بيانات الحركة</h2></div>
+    <div class="card-body">
+      <form id="movement-form">
+        <div class="fg">
+          <div class="field full">
+            <label>اختر المركبة (المتاحة فقط) *</label>
+            <select id="vehicle-select" required><option value="">— اختر مركبة —</option></select>
+          </div>
+          <div class="field"><label>اسم الموظف *</label><input type="text" id="user-name" required placeholder="الاسم الكامل"></div>
+          <div class="field"><label>القسم / الجهة *</label><input type="text" id="department" required placeholder="مثال: قسم الطرق"></div>
+          <div class="field"><label>اسم المهمة *</label><input type="text" id="mission-name" required placeholder="مثال: صيانة طريق..."></div>
+          <div class="field"><label>مكان المهمة *</label><input type="text" id="mission-location" required placeholder="مثال: ولاية صور"></div>
+          <div class="field"><label>تاريخ الاستلام *</label><input type="date" id="pickup-date" required></div>
+          <div class="field"><label>وقت الاستلام *</label><input type="time" id="pickup-time" required></div>
+          <div class="field"><label>قراءة العداد (كم) *</label><input type="number" id="meter-reading" required placeholder="0"></div>
+          <div class="field">
+            <label>مستوى الوقود *</label>
+            <select id="fuel-level" required>
+              <option value="">— اختر —</option>
+              <option>ممتلئ</option><option>3/4</option><option>نصف</option><option>1/4</option><option>فارغ تقريباً</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px"><button type="submit" class="btn btn-primary" id="mv-submit-btn">💾 حفظ الحركة</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── RETURN VEHICLE ── -->
+<div id="tab-return-vehicle" style="display:none">
+  <div class="page-head"><div><h1>إعادة مركبة</h1><p>الحركات النشطة الحالية</p></div></div>
+  <div id="active-list"><div class="loading">جاري التحميل...</div></div>
+</div>
+
+<!-- ── MOVEMENTS LOG ── -->
+<div id="tab-movements" style="display:none">
+  <div class="page-head">
+    <div><h1>سجل الحركات</h1><p>السجل الكامل لجميع حركات المركبات</p></div>
+    <button class="btn btn-ghost btn-sm" onclick="printSection()">🖨️ طباعة</button>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>المركبة</th><th>الموظف</th><th>القسم</th><th>المهمة</th><th>مكان المهمة</th><th>الاستلام</th><th>الإعادة</th><th>المسافة</th><th>الحالة</th></tr></thead>
+        <tbody id="mv-tbody"><tr><td colspan="9" class="loading">جاري التحميل...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── VEHICLES ── -->
+<div id="tab-vehicles" style="display:none">
+  <div class="page-head">
+    <div><h1>إدارة المركبات</h1><p>قائمة مركبات البلدية وحالاتها</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-vehicle')">➕ إضافة مركبة</button>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>رقم اللوحة</th><th>النوع</th><th>الموديل</th><th>اللون</th><th>رقم الشاصي</th><th>نوع الوقود</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody id="veh-tbody"><tr><td colspan="8" class="loading">جاري التحميل...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAINTENANCE ── -->
+<div id="tab-maintenance" style="display:none">
+  <div class="page-head">
+    <div><h1>إدارة الصيانة</h1><p>سجل صيانة المركبات</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-maintenance')">➕ إضافة صيانة</button>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>المركبة</th><th>مكان الصيانة</th><th>نوع الصيانة</th><th>السبب</th><th>التاريخ</th><th>التكلفة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody id="maint-tbody"><tr><td colspan="8" class="loading">جاري التحميل...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── ACCIDENTS ── -->
+<div id="tab-accidents" style="display:none">
+  <div class="page-head">
+    <div><h1>سجل الحوادث</h1><p>تتبع وإدارة حوادث المركبات</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-accident')">➕ تسجيل حادث</button>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>المركبة</th><th>السائق</th><th>تاريخ الحادث</th><th>مكان الحادث</th><th>وصف الحادث</th><th>قرار الإدارة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody id="acc-tbody"><tr><td colspan="8" class="loading">جاري التحميل...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── FAULTS ── -->
+<div id="tab-faults" style="display:none">
+  <div class="page-head">
+    <div><h1>سجل الأعطال</h1><p>تتبع وإدارة أعطال المركبات</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-fault')">➕ تسجيل عطل</button>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>المركبة</th><th>نوع العطل</th><th>الوصف</th><th>المُبلّغ</th><th>تاريخ الإبلاغ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody id="fault-tbody"><tr><td colspan="7" class="loading">جاري التحميل...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div><!-- /layout -->
+</div><!-- /app-wrapper -->
+
+<!-- ══ MODAL: ADD VEHICLE ══ -->
+<div class="modal-overlay" id="modal-add-vehicle">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-add-vehicle')">✕</button>
+    <div class="modal-head"><h3>➕ إضافة مركبة جديدة</h3></div>
+    <div class="fg">
+      <div class="field"><label>رقم اللوحة *</label><input type="text" id="v-number" placeholder="مثال: أ ب ج 1234"></div>
+      <div class="field"><label>نوع المركبة *</label><input type="text" id="v-type" placeholder="مثال: تويوتا لاند كروزر"></div>
+      <div class="field"><label>سنة الصنع</label><input type="number" id="v-model" placeholder="2024"></div>
+      <div class="field"><label>اللون</label><input type="text" id="v-color" placeholder="أبيض"></div>
+      <div class="field"><label>رقم الشاصي</label><input type="text" id="v-chassis" placeholder="رقم الشاصي"></div>
+      <div class="field"><label>رقم المحرك</label><input type="text" id="v-engine" placeholder="رقم المحرك"></div>
+      <div class="field">
+        <label>نوع الوقود</label>
+        <select id="v-fuel"><option value="">— اختر —</option><option>بنزين</option><option>ديزل</option><option>هجين</option><option>كهربائي</option></select>
+      </div>
+      <div class="field">
+        <label>الحالة</label>
+        <select id="v-status">
+          <option value="available">متاحة</option>
+          <option value="maintenance">تحت الصيانة</option>
+          <option value="out_of_service">خارج الخدمة</option>
+        </select>
+      </div>
+      <div class="field full"><label>ملاحظات</label><textarea id="v-notes" rows="2" placeholder="أي ملاحظات..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="addVehicle()">💾 حفظ المركبة</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-vehicle')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: EDIT VEHICLE STATUS ══ -->
+<div class="modal-overlay" id="modal-edit-vehicle-status">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-edit-vehicle-status')">✕</button>
+    <div class="modal-head"><h3>✏️ تغيير حالة المركبة</h3><p id="edit-veh-label">—</p></div>
+    <input type="hidden" id="edit-veh-id">
+    <div class="field" style="margin-bottom:16px">
+      <label>الحالة الجديدة</label>
+      <select id="edit-veh-status">
+        <option value="available">✅ متاحة</option>
+        <option value="in_use">🔄 مستخدمة</option>
+        <option value="maintenance">🔧 تحت الصيانة</option>
+        <option value="accident">🚨 حادث</option>
+        <option value="out_of_service">❌ خارج الخدمة</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveVehicleStatus()">حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-vehicle-status')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: RETURN ══ -->
+<div class="modal-overlay" id="modal-return">
+  <div class="modal modal-xl">
+    <button class="modal-close" onclick="closeModal('modal-return')">✕</button>
+    <div class="modal-head"><h3>↩️ تسجيل إعادة المركبة</h3><p id="ret-veh-label">—</p></div>
+    <input type="hidden" id="ret-mv-id">
+
+    <div style="background:var(--gray-100);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-600);margin-bottom:10px">📋 فحص ما بعد الاستخدام</div>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="post-body"> الهيكل الخارجي سليم</label>
+        <label class="check-item"><input type="checkbox" id="post-tires"> الإطارات سليمة</label>
+        <label class="check-item"><input type="checkbox" id="post-lights"> الأنوار سليمة</label>
+        <label class="check-item"><input type="checkbox" id="post-nodmg" checked> لا توجد أضرار جديدة</label>
+      </div>
+    </div>
+
+    <div class="fg">
+      <div class="field"><label>قراءة العداد عند الإعادة (كم) *</label><input type="number" id="ret-meter" placeholder="0"></div>
+      <div class="field">
+        <label>مستوى الوقود</label>
+        <select id="ret-fuel"><option value="">— اختر —</option><option>ممتلئ</option><option>3/4</option><option>نصف</option><option>1/4</option><option>فارغ تقريباً</option></select>
+      </div>
+      <div class="field full"><label>ملاحظات الإعادة</label><textarea id="ret-notes" rows="2" placeholder="تسجيل أي أعطال أو ملاحظات..."></textarea></div>
+    </div>
+
+    <div class="pledge-box">
+      <label>
+        <input type="checkbox" id="ret-pledge" required>
+        أتعهد بأن المركبة أُعيدت بحالة جيدة ولم تتعرض لأي أضرار أثناء الاستخدام، وأتحمل مسؤولية أي بيانات غير صحيحة.
+      </label>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="confirmReturn()">✅ تأكيد الإعادة</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-return')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ADD MAINTENANCE ══ -->
+<div class="modal-overlay" id="modal-add-maintenance">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-add-maintenance')">✕</button>
+    <div class="modal-head"><h3>🔧 إضافة سجل صيانة</h3></div>
+    <div class="fg">
+      <div class="field full"><label>المركبة *</label><select id="mnt-veh" required><option value="">— اختر —</option></select></div>
+      <div class="field"><label>مكان الصيانة (الورشة) *</label><input type="text" id="mnt-workshop" placeholder="اسم الورشة"></div>
+      <div class="field"><label>نوع الصيانة *</label><input type="text" id="mnt-type" placeholder="مثال: تغيير زيت، إطارات..."></div>
+      <div class="field full"><label>سبب الصيانة *</label><textarea id="mnt-reason" rows="2" required placeholder="وصف تفصيلي للسبب..."></textarea></div>
+      <div class="field"><label>تاريخ الإدخال *</label><input type="date" id="mnt-date" required></div>
+      <div class="field"><label>وقت الإدخال</label><input type="time" id="mnt-time"></div>
+      <div class="field"><label>التكلفة التقديرية (ر.ع)</label><input type="number" id="mnt-est-cost" step="0.001" placeholder="0.000"></div>
+      <div class="field"><label>التكلفة الفعلية (ر.ع)</label><input type="number" id="mnt-act-cost" step="0.001" placeholder="0.000"></div>
+      <div class="field">
+        <label>الحالة</label>
+        <select id="mnt-status">
+          <option value="open">مفتوحة</option>
+          <option value="in_progress">جاري التنفيذ</option>
+          <option value="completed">مكتملة</option>
+        </select>
+      </div>
+      <div class="field"><label>تاريخ الانتهاء</label><input type="date" id="mnt-end-date"></div>
+      <div class="field full"><label>ملاحظات</label><textarea id="mnt-notes" rows="2" placeholder="أي ملاحظات إضافية..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="addMaintenance()">💾 حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-maintenance')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ADD ACCIDENT ══ -->
+<div class="modal-overlay" id="modal-add-accident">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-add-accident')">✕</button>
+    <div class="modal-head"><h3>🚨 تسجيل حادث</h3></div>
+    <div class="fg">
+      <div class="field full"><label>المركبة *</label><select id="acc-veh" required><option value="">— اختر —</option></select></div>
+      <div class="field"><label>اسم السائق *</label><input type="text" id="acc-driver" required placeholder="الاسم الكامل"></div>
+      <div class="field"><label>تاريخ الحادث *</label><input type="date" id="acc-date" required></div>
+      <div class="field"><label>وقت الحادث</label><input type="time" id="acc-time"></div>
+      <div class="field full"><label>مكان الحادث *</label><input type="text" id="acc-loc" required placeholder="الموقع التفصيلي"></div>
+      <div class="field full"><label>وصف الحادث *</label><textarea id="acc-desc" rows="3" required placeholder="وصف تفصيلي للحادث..."></textarea></div>
+      <div class="field full"><label>قرار الإدارة</label><textarea id="acc-decision" rows="2" placeholder="قرار الإدارة..."></textarea></div>
+      <div class="field">
+        <label>الحالة</label>
+        <select id="acc-status">
+          <option value="under_review">قيد المراجعة</option>
+          <option value="repairing">جاري الإصلاح</option>
+          <option value="closed">مغلق</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="addAccident()">💾 حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-accident')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ADD FAULT ══ -->
+<div class="modal-overlay" id="modal-add-fault">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-add-fault')">✕</button>
+    <div class="modal-head"><h3>⚠️ تسجيل عطل</h3></div>
+    <div class="fg">
+      <div class="field full"><label>المركبة *</label><select id="flt-veh" required><option value="">— اختر —</option></select></div>
+      <div class="field"><label>نوع العطل *</label><input type="text" id="flt-type" required placeholder="مثال: عطل في المحرك"></div>
+      <div class="field"><label>المُبلّغ</label><input type="text" id="flt-reporter" placeholder="اسم المُبلّغ"></div>
+      <div class="field full"><label>وصف العطل</label><textarea id="flt-desc" rows="2" placeholder="وصف العطل..."></textarea></div>
+      <div class="field">
+        <label>الحالة</label>
+        <select id="flt-status">
+          <option value="open">مفتوح</option>
+          <option value="in_progress">قيد الإصلاح</option>
+          <option value="resolved">تم الإصلاح</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="addFault()">💾 حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-fault')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════ SUPABASE + LOGIC ══════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ─── Supabase Init ─── */
+const SB_URL = 'https://asnapdqjntxvzemnbnum.supabase.co';
+const SB_KEY = 'sb_publishable_8ywW1XpnyxPkCXCG6MEhDA_gUmP_al-';
+const db = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* ─── Auth ─── */
+const USERS = {
+  admin:{ pass:'123456', role:'admin', label:'مدير النظام' },
+  supervisor:{ pass:'super123', role:'supervisor', label:'مشرف النقل' }
+};
+let currentUser = null;
+
+function doLogin(){
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  if(USERS[u] && USERS[u].pass === p){
+    currentUser = { username:u, ...USERS[u] };
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-wrapper').style.display = 'block';
+    document.getElementById('user-label').textContent = currentUser.label;
+    err.style.display = 'none';
+    initApp();
+  } else {
+    err.style.display = 'block';
+  }
+}
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout(){
+  if(!confirm('هل تريد تسجيل الخروج؟')) return;
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-wrapper').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+}
+
+/* ─── Toast ─── */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ─── Modal ─── */
+function openModal(id){ document.getElementById(id).classList.add('open') }
+function closeModal(id){ document.getElementById(id).classList.remove('open') }
+
+/* ─── Notification Panel ─── */
+function toggleNotif(){
+  document.getElementById('notif-panel').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const panel = document.getElementById('notif-panel');
+  if(panel.classList.contains('open') && !panel.contains(e.target) && !e.target.closest('.notif-btn'))
+    panel.classList.remove('open');
+});
+
+/* ─── Tab Navigation ─── */
+const TABS = ['dashboard','new-movement','return-vehicle','movements','vehicles','maintenance','accidents','faults'];
+function showTab(name, el){
+  TABS.forEach(n => {
+    const t = document.getElementById('tab-'+n);
+    if(t) t.style.display = 'none';
+  });
+  const tab = document.getElementById('tab-'+name);
+  if(tab) tab.style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const loaders = {
+    'dashboard': loadDashboard,
+    'return-vehicle': loadActiveMovements,
+    'movements': loadAllMovements,
+    'vehicles': loadVehicles,
+    'maintenance': loadMaintenance,
+    'accidents': loadAccidents,
+    'faults': loadFaults,
+    'new-movement': loadAvailableVehicles
+  };
+  if(loaders[name]) loaders[name]();
+}
+
+/* ─── Vehicle Status Helpers ─── */
+function vstatus(s){
+  const map = {
+    available:['b-avail','✅ متاحة'],
+    in_use:['b-inuse','🔄 مستخدمة'],
+    maintenance:['b-maint','🔧 صيانة'],
+    accident:['b-accident','🚨 حادث'],
+    out_of_service:['b-out','❌ خارج الخدمة']
+  };
+  const v = map[s] || ['b-out', s];
+  return `<span class="badge ${v[0]}">${v[1]}</span>`;
+}
+function mvstatus(s){
+  return s==='active'
+    ? '<span class="badge b-active">🔄 نشطة</span>'
+    : '<span class="badge b-returned">✅ أُعيدت</span>';
+}
+function mstatus(s){
+  const map={open:['b-open','مفتوحة'],in_progress:['b-progress','جارية'],completed:['b-done','مكتملة']};
+  const v=map[s]||['b-out',s];
+  return `<span class="badge ${v[0]}">${v[1]}</span>`;
+}
+function astatus(s){
+  const map={under_review:['b-review','قيد المراجعة'],repairing:['b-repair','إصلاح'],closed:['b-closed','مغلق']};
+  const v=map[s]||['b-out',s];
+  return `<span class="badge ${v[0]}">${v[1]}</span>`;
+}
+
+/* ─── DASHBOARD ─── */
+async function loadDashboard(){
+  document.getElementById('current-date').textContent =
+    new Date().toLocaleDateString('ar-OM',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const [vRes, mvRes, mRes] = await Promise.all([
+    db.from('vehicles').select('status'),
+    db.from('vehicle_movements').select('status,created_at,driver_name,department,mission_name,mission_location,vehicles(vehicle_number,vehicle_type)').order('created_at',{ascending:false}).limit(10),
+    db.from('maintenance_records').select('status')
+  ]);
+
+  const veh = vRes.data || [];
+  document.getElementById('s-total').textContent = veh.length;
+  document.getElementById('s-avail').textContent = veh.filter(v=>v.status==='available').length;
+  document.getElementById('s-inuse').textContent = veh.filter(v=>v.status==='in_use').length;
+  document.getElementById('s-maint').textContent = veh.filter(v=>v.status==='maintenance').length;
+  document.getElementById('s-acc').textContent = veh.filter(v=>v.status==='accident').length;
+  document.getElementById('s-out').textContent = veh.filter(v=>v.status==='out_of_service').length;
+
+  const mv = mvRes.data || [];
+  document.getElementById('s-active-mv').textContent = mv.filter(m=>m.status==='active').length;
+
+  const mn = mRes.data || [];
+  document.getElementById('s-open-maint').textContent = mn.filter(m=>m.status!=='completed').length;
+
+  // Recent movements table
+  const tb = document.getElementById('dash-tbody');
+  if(!mv.length){ tb.innerHTML='<tr><td colspan="7" class="loading">لا توجد حركات مسجّلة</td></tr>'; return; }
+  tb.innerHTML = mv.map(m => `<tr>
+    <td><span class="badge b-inuse">🚙 ${m.vehicles?.vehicle_number||'—'}</span></td>
+    <td>${m.driver_name||'—'}</td>
+    <td>${m.department||'—'}</td>
+    <td>${m.mission_name||'—'}</td>
+    <td>${m.mission_location||'—'}</td>
+    <td>${m.created_at ? new Date(m.created_at).toLocaleDateString('ar-OM') : '—'}</td>
+    <td>${mvstatus(m.status)}</td>
+  </tr>`).join('');
+}
+
+/* ─── VEHICLES ─── */
+async function loadVehicles(){
+  const {data,error} = await db.from('vehicles').select('*').order('created_at',{ascending:false});
+  const tb = document.getElementById('veh-tbody');
+  if(error||!data?.length){ tb.innerHTML='<tr><td colspan="8" class="loading">لا توجد مركبات مسجّلة</td></tr>'; return; }
+  tb.innerHTML = data.map(v => `<tr>
+    <td><strong>${v.vehicle_number}</strong></td>
+    <td>${v.vehicle_type}</td>
+    <td>${v.model_year||'—'}</td>
+    <td>${v.color||'—'}</td>
+    <td style="font-size:11px">${v.chassis_number||'—'}</td>
+    <td>${v.fuel_type||'—'}</td>
+    <td>${vstatus(v.status)}</td>
+    <td>
+      <button class="btn btn-gold btn-xs" onclick="openEditVehicleStatus(${v.id},'${v.vehicle_number} — ${v.vehicle_type}','${v.status}')">✏️ الحالة</button>
+      <button class="btn btn-danger btn-xs" onclick="deleteVehicle(${v.id})">🗑️</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function addVehicle(){
+  const num = document.getElementById('v-number').value.trim();
+  const typ = document.getElementById('v-type').value.trim();
+  if(!num||!typ){ toast('⚠️ رقم اللوحة والنوع مطلوبان'); return; }
+  const {error} = await db.from('vehicles').insert([{
+    vehicle_number: num, vehicle_type: typ,
+    model_year: document.getElementById('v-model').value || null,
+    color: document.getElementById('v-color').value || null,
+    chassis_number: document.getElementById('v-chassis').value || null,
+    engine_number: document.getElementById('v-engine').value || null,
+    fuel_type: document.getElementById('v-fuel').value || null,
+    status: document.getElementById('v-status').value,
+    notes: document.getElementById('v-notes').value || null
+  }]);
+  if(error){ toast('❌ خطأ: '+error.message); return; }
+  toast('✅ تمت إضافة المركبة');
+  closeModal('modal-add-vehicle');
+  ['v-number','v-type','v-model','v-color','v-chassis','v-engine','v-notes'].forEach(id => document.getElementById(id).value='');
+  loadVehicles();
+}
+
+function openEditVehicleStatus(id, label, status){
+  document.getElementById('edit-veh-id').value = id;
+  document.getElementById('edit-veh-label').textContent = label;
+  document.getElementById('edit-veh-status').value = status;
+  openModal('modal-edit-vehicle-status');
+}
+async function saveVehicleStatus(){
+  const id = document.getElementById('edit-veh-id').value;
+  const ns = document.getElementById('edit-veh-status').value;
+  const {error} = await db.from('vehicles').update({status:ns}).eq('id',id);
+  if(error){ toast('❌ '+error.message); return; }
+  toast('✅ تم تحديث الحالة');
+  closeModal('modal-edit-vehicle-status');
+  loadVehicles();
+}
+async function deleteVehicle(id){
+  if(!confirm('هل أنت متأكد من حذف هذه المركبة؟')) return;
+  const {error} = await db.from('vehicles').delete().eq('id',id);
+  if(error){ toast('❌ '+error.message); return; }
+  toast('تم حذف المركبة');
+  loadVehicles();
+}
+
+/* ─── NEW MOVEMENT ─── */
+async function loadAvailableVehicles(){
+  const {data} = await db.from('vehicles').select('id,vehicle_number,vehicle_type,color').eq('status','available').order('vehicle_number');
+  const sel = document.getElementById('vehicle-select');
+  sel.innerHTML = '<option value="">— اختر مركبة —</option>';
+  (data||[]).forEach(v => {
+    sel.innerHTML += `<option value="${v.id}">${v.vehicle_number} — ${v.vehicle_type} (${v.color||''})</option>`;
+  });
+}
+
+document.getElementById('movement-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const btn = document.getElementById('mv-submit-btn');
+  btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+
+  const vId = parseInt(document.getElementById('vehicle-select').value);
+  const mvData = {
+    vehicle_id: vId,
+    driver_name: document.getElementById('user-name').value,
+    department: document.getElementById('department').value,
+    mission_name: document.getElementById('mission-name').value,
+    mission_location: document.getElementById('mission-location').value,
+    pickup_date: document.getElementById('pickup-date').value,
+    pickup_time: document.getElementById('pickup-time').value,
+    pickup_meter: parseInt(document.getElementById('meter-reading').value),
+    pickup_fuel_level: document.getElementById('fuel-level').value,
+    status: 'active'
+  };
+
+  const {data:mvInserted, error:mvErr} = await db.from('vehicle_movements').insert([mvData]).select().single();
+  if(mvErr){ toast('❌ خطأ: '+mvErr.message); btn.disabled=false; btn.textContent='💾 حفظ الحركة'; return; }
+
+  // Save pre-inspection
+  await db.from('vehicle_pre_inspections').insert([{
+    movement_id: mvInserted.id,
+    tires_ok: document.getElementById('pre-tires').checked,
+    lights_ok: document.getElementById('pre-lights').checked,
+    ac_ok: document.getElementById('pre-ac').checked,
+    oil_ok: document.getElementById('pre-oil').checked,
+    water_ok: document.getElementById('pre-water').checked,
+    extinguisher_ok: document.getElementById('pre-ext').checked,
+    first_aid_ok: document.getElementById('pre-aid').checked,
+    notes: document.getElementById('pre-notes').value || null
+  }]);
+
+  // Update vehicle status
+  await db.from('vehicles').update({status:'in_use'}).eq('id',vId);
+
+  toast('✅ تم تسجيل الحركة بنجاح');
+  this.reset();
+  document.getElementById('pickup-date').valueAsDate = new Date();
+  document.getElementById('pickup-time').value = new Date().toTimeString().substring(0,5);
+  btn.disabled=false; btn.textContent='💾 حفظ الحركة';
+  showTab('dashboard', document.querySelector('.nav-item'));
+});
+
+/* ─── RETURN ─── */
+async function loadActiveMovements(){
+  const {data,error} = await db.from('vehicle_movements')
+    .select('id,driver_name,department,mission_name,mission_location,pickup_date,pickup_time,pickup_meter,pickup_fuel_level,vehicles(id,vehicle_number,vehicle_type)')
+    .eq('status','active').order('created_at',{ascending:false});
+  const wrap = document.getElementById('active-list');
+  if(error||!data?.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">✅</div><p>لا توجد حركات نشطة — جميع المركبات مُعادة</p></div>';
+    return;
+  }
+  wrap.innerHTML = data.map(m => `<div class="mv-card">
+    <div class="mv-icon">🚙</div>
+    <div class="mv-body">
+      <h3>${m.vehicles?.vehicle_number||'—'} — ${m.vehicles?.vehicle_type||'—'}</h3>
+      <div class="mv-meta">
+        <span>👤 ${m.driver_name}</span>
+        <span>🏢 ${m.department}</span>
+        <span>📋 ${m.mission_name||'—'}</span>
+        <span>📅 ${m.pickup_date||''} ${m.pickup_time||''}</span>
+        <span>🔢 ${(m.pickup_meter||0).toLocaleString()} كم</span>
+        <span>⛽ ${m.pickup_fuel_level||'—'}</span>
+        <span>📍 ${m.mission_location||'—'}</span>
+      </div>
+      <div class="mv-actions">
+        <button class="btn btn-gold btn-sm" onclick="openReturnModal(${m.id},'${m.vehicles?.vehicle_number||''} — ${m.vehicles?.vehicle_type||''}',${m.pickup_meter||0},${m.vehicles?.id||0})">↩️ تسجيل الإعادة</button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+function openReturnModal(mvId, label, pickupMeter, vehId){
+  document.getElementById('ret-mv-id').value = mvId;
+  document.getElementById('ret-mv-id').dataset.vehid = vehId;
+  document.getElementById('ret-mv-id').dataset.pickup = pickupMeter;
+  document.getElementById('ret-veh-label').textContent = label+' | عداد الاستلام: '+pickupMeter.toLocaleString()+' كم';
+  document.getElementById('ret-meter').value='';
+  document.getElementById('ret-notes').value='';
+  document.getElementById('ret-pledge').checked=false;
+  ['post-body','post-tires','post-lights'].forEach(id => document.getElementById(id).checked=false);
+  document.getElementById('post-nodmg').checked=true;
+  openModal('modal-return');
+}
+
+async function confirmReturn(){
+  const pledge = document.getElementById('ret-pledge').checked;
+  if(!pledge){ toast('⚠️ يجب الموافقة على التعهد أولاً'); return; }
+  const retMeter = parseInt(document.getElementById('ret-meter').value);
+  if(!retMeter||isNaN(retMeter)){ toast('⚠️ يرجى إدخال قراءة العداد'); return; }
+  const mvId = parseInt(document.getElementById('ret-mv-id').value);
+  const vehId = parseInt(document.getElementById('ret-mv-id').dataset.vehid);
+  const pickupMeter = parseInt(document.getElementById('ret-mv-id').dataset.pickup);
+  if(retMeter < pickupMeter){ toast('⚠️ قراءة الإعادة أقل من قراءة الاستلام'); return; }
+
+  const distance = retMeter - pickupMeter;
+
+  // Insert return record
+  const {error:retErr} = await db.from('vehicle_returns').insert([{
+    movement_id: mvId,
+    return_date: new Date().toISOString().split('T')[0],
+    return_time: new Date().toTimeString().substring(0,5),
+    return_meter: retMeter,
+    distance_km: distance,
+    fuel_level: document.getElementById('ret-fuel').value || null,
+    driver_commitment: true,
+    return_notes: document.getElementById('ret-notes').value || null
+  }]);
+  if(retErr){ toast('❌ '+retErr.message); return; }
+
+  // Post inspection
+  await db.from('vehicle_post_inspections').insert([{
+    movement_id: mvId,
+    body_ok: document.getElementById('post-body').checked,
+    tires_ok: document.getElementById('post-tires').checked,
+    lights_ok: document.getElementById('post-lights').checked,
+    new_damage: !document.getElementById('post-nodmg').checked,
+    notes: document.getElementById('ret-notes').value || null
+  }]);
+
+  // Update movement status
+  await db.from('vehicle_movements').update({status:'returned'}).eq('id',mvId);
+  // Update vehicle status
+  await db.from('vehicles').update({status:'available'}).eq('id',vehId);
+
+  closeModal('modal-return');
+  toast('✅ تم تسجيل الإعادة — المسافة: '+distance.toLocaleString()+' كم');
+  loadActiveMovements();
+}
+
+/* ─── ALL MOVEMENTS ─── */
+async function loadAllMovements(){
+  const {data,error} = await db.from('vehicle_movements')
+    .select('*,vehicles(vehicle_number,vehicle_type),vehicle_returns(return_date,return_time,distance_km)')
+    .order('created_at',{ascending:false}).limit(200);
+  const tb = document.getElementById('mv-tbody');
+  if(error||!data?.length){ tb.innerHTML='<tr><td colspan="9" class="loading">لا توجد حركات</td></tr>'; return; }
+  tb.innerHTML = data.map(m => {
+    const ret = m.vehicle_returns?.[0];
+    return `<tr>
+      <td><span class="badge b-inuse">🚙 ${m.vehicles?.vehicle_number||'—'}</span></td>
+      <td>${m.driver_name||'—'}</td>
+      <td>${m.department||'—'}</td>
+      <td>${m.mission_name||'—'}</td>
+      <td>${m.mission_location||'—'}</td>
+      <td>${m.pickup_date||''} ${m.pickup_time||''}</td>
+      <td>${ret ? ret.return_date+' '+ret.return_time : '—'}</td>
+      <td>${ret ? (ret.distance_km||0).toLocaleString()+' كم' : '—'}</td>
+      <td>${mvstatus(m.status)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ─── MAINTENANCE ─── */
+async function loadMaintenance(){
+  const {data,error} = await db.from('maintenance_records')
+    .select('*,vehicles(vehicle_number,vehicle_type)')
+    .order('created_at',{ascending:false});
+  const tb = document.getElementById('maint-tbody');
+  if(error||!data?.length){ tb.innerHTML='<tr><td colspan="8" class="loading">لا توجد سجلات صيانة</td></tr>'; return; }
+  tb.innerHTML = data.map(m => `<tr>
+    <td><span class="badge b-maint">🔧 ${m.vehicles?.vehicle_number||'—'}</span></td>
+    <td>${m.workshop_name||'—'}</td>
+    <td>${m.maintenance_type||'—'}</td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.maintenance_reason||''}">${m.maintenance_reason||'—'}</td>
+    <td>${m.maintenance_date||'—'}</td>
+    <td>${m.actual_cost ? m.actual_cost.toLocaleString()+' ر.ع' : (m.estimated_cost ? '~'+m.estimated_cost.toLocaleString()+' ر.ع' : '—')}</td>
+    <td>${mstatus(m.status)}</td>
+    <td>
+      <button class="btn btn-gold btn-xs" onclick="completeMaintenance(${m.id},${m.vehicle_id})">✅ إغلاق</button>
+      <button class="btn btn-danger btn-xs" onclick="deleteMaintenance(${m.id})">🗑️</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function loadVehiclesForSelects(){
+  const {data} = await db.from('vehicles').select('id,vehicle_number,vehicle_type').order('vehicle_number');
+  ['mnt-veh','acc-veh','flt-veh'].forEach(id => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    sel.innerHTML='<option value="">— اختر مركبة —</option>';
+    (data||[]).forEach(v => { sel.innerHTML+=`<option value="${v.id}">${v.vehicle_number} — ${v.vehicle_type}</option>`; });
+  });
+}
+
+async function addMaintenance(){
+  const vId = parseInt(document.getElementById('mnt-veh').value);
+  if(!vId){ toast('⚠️ اختر المركبة'); return; }
+  const reason = document.getElementById('mnt-reason').value.trim();
+  if(!reason){ toast('⚠️ سبب الصيانة مطلوب'); return; }
+
+  const {error} = await db.from('maintenance_records').insert([{
+    vehicle_id: vId,
+    workshop_name: document.getElementById('mnt-workshop').value||null,
+    maintenance_type: document.getElementById('mnt-type').value||null,
+    maintenance_reason: reason,
+    maintenance_date: document.getElementById('mnt-date').value||null,
+    maintenance_time: document.getElementById('mnt-time').value||null,
+    estimated_cost: parseFloat(document.getElementById('mnt-est-cost').value)||null,
+    actual_cost: parseFloat(document.getElementById('mnt-act-cost').value)||null,
+    status: document.getElementById('mnt-status').value,
+    end_date: document.getElementById('mnt-end-date').value||null,
+    notes: document.getElementById('mnt-notes').value||null
+  }]);
+  if(error){ toast('❌ '+error.message); return; }
+
+  // Set vehicle status to maintenance if open/in_progress
+  const s = document.getElementById('mnt-status').value;
+  if(s!=='completed') await db.from('vehicles').update({status:'maintenance'}).eq('id',vId);
+
+  toast('✅ تم حفظ سجل الصيانة');
+  closeModal('modal-add-maintenance');
+  loadMaintenance();
+}
+
+async function completeMaintenance(id, vehId){
+  if(!confirm('إغلاق سجل الصيانة وتحديث حالة المركبة إلى متاحة؟')) return;
+  await db.from('maintenance_records').update({status:'completed'}).eq('id',id);
+  await db.from('vehicles').update({status:'available'}).eq('id',vehId);
+  toast('✅ تم إغلاق الصيانة');
+  loadMaintenance();
+}
+async function deleteMaintenance(id){
+  if(!confirm('حذف سجل الصيانة؟')) return;
+  await db.from('maintenance_records').delete().eq('id',id);
+  toast('تم الحذف'); loadMaintenance();
+}
+
+/* ─── ACCIDENTS ─── */
+async function loadAccidents(){
+  const {data,error} = await db.from('accident_records')
+    .select('*,vehicles(vehicle_number,vehicle_type)')
+    .order('created_at',{ascending:false});
+  const tb = document.getElementById('acc-tbody');
+  if(error||!data?.length){ tb.innerHTML='<tr><td colspan="8" class="loading">لا توجد حوادث مسجّلة</td></tr>'; return; }
+  tb.innerHTML = data.map(a => `<tr>
+    <td><span class="badge b-accident">🚨 ${a.vehicles?.vehicle_number||'—'}</span></td>
+    <td>${a.driver_name||'—'}</td>
+    <td>${a.accident_date||'—'}</td>
+    <td>${a.accident_location||'—'}</td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.accident_description||''}">${a.accident_description||'—'}</td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.management_decision||'—'}</td>
+    <td>${astatus(a.status)}</td>
+    <td>
+      <button class="btn btn-danger btn-xs" onclick="deleteAccident(${a.id},${a.vehicle_id})">🗑️</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function addAccident(){
+  const vId = parseInt(document.getElementById('acc-veh').value);
+  const driver = document.getElementById('acc-driver').value.trim();
+  const accDate = document.getElementById('acc-date').value;
+  if(!vId||!driver||!accDate){ toast('⚠️ المركبة، السائق، والتاريخ مطلوبة'); return; }
+
+  const {error} = await db.from('accident_records').insert([{
+    vehicle_id: vId,
+    driver_name: driver,
+    accident_date: accDate,
+    accident_time: document.getElementById('acc-time').value||null,
+    accident_location: document.getElementById('acc-loc').value||null,
+    accident_description: document.getElementById('acc-desc').value||null,
+    management_decision: document.getElementById('acc-decision').value||null,
+    status: document.getElementById('acc-status').value
+  }]);
+  if(error){ toast('❌ '+error.message); return; }
+  await db.from('vehicles').update({status:'accident'}).eq('id',vId);
+  toast('✅ تم تسجيل الحادث');
+  closeModal('modal-add-accident');
+  loadAccidents();
+}
+
+async function deleteAccident(id, vehId){
+  if(!confirm('حذف سجل الحادث؟')) return;
+  await db.from('accident_records').delete().eq('id',id);
+  toast('تم الحذف'); loadAccidents();
+}
+
+/* ─── FAULTS ─── */
+async function loadFaults(){
+  const {data,error} = await db.from('fault_records')
+    .select('*,vehicles(vehicle_number,vehicle_type)')
+    .order('created_at',{ascending:false});
+  const tb = document.getElementById('fault-tbody');
+  if(error||!data?.length){ tb.innerHTML='<tr><td colspan="7" class="loading">لا توجد أعطال مسجّلة</td></tr>'; return; }
+  tb.innerHTML = data.map(f => `<tr>
+    <td><span class="badge b-maint">⚠️ ${f.vehicles?.vehicle_number||'—'}</span></td>
+    <td>${f.fault_type||'—'}</td>
+    <td>${f.description||'—'}</td>
+    <td>${f.reporter_name||'—'}</td>
+    <td>${f.created_at ? new Date(f.created_at).toLocaleDateString('ar-OM') : '—'}</td>
+    <td>${mstatus(f.status)}</td>
+    <td>
+      <button class="btn btn-gold btn-xs" onclick="resolveFault(${f.id})">✅ حل</button>
+      <button class="btn btn-danger btn-xs" onclick="deleteFault(${f.id})">🗑️</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function addFault(){
+  const vId = parseInt(document.getElementById('flt-veh').value);
+  const typ = document.getElementById('flt-type').value.trim();
+  if(!vId||!typ){ toast('⚠️ المركبة ونوع العطل مطلوبان'); return; }
+  const {error} = await db.from('fault_records').insert([{
+    vehicle_id: vId,
+    fault_type: typ,
+    description: document.getElementById('flt-desc').value||null,
+    reporter_name: document.getElementById('flt-reporter').value||null,
+    status: document.getElementById('flt-status').value
+  }]);
+  if(error){ toast('❌ '+error.message); return; }
+  toast('✅ تم تسجيل العطل');
+  closeModal('modal-add-fault');
+  loadFaults();
+}
+async function resolveFault(id){
+  await db.from('fault_records').update({status:'resolved'}).eq('id',id);
+  toast('✅ تم تحديد العطل كمحلول'); loadFaults();
+}
+async function deleteFault(id){
+  if(!confirm('حذف سجل العطل؟')) return;
+  await db.from('fault_records').delete().eq('id',id);
+  toast('تم الحذف'); loadFaults();
+}
+
+/* ─── NOTIFICATIONS ─── */
+async function loadNotifications(){
+  const today = new Date().toISOString().split('T')[0];
+  const {data:maint} = await db.from('maintenance_records')
+    .select('vehicles(vehicle_number),maintenance_date').neq('status','completed');
+  const {data:accs} = await db.from('accident_records')
+    .select('vehicles(vehicle_number),accident_date').eq('status','under_review');
+
+  const notifs = [];
+  (maint||[]).forEach(m => notifs.push({t:'🔧 صيانة معلقة',s:m.vehicles?.vehicle_number||'مركبة'}));
+  (accs||[]).forEach(a => notifs.push({t:'🚨 حادث قيد المراجعة',s:a.vehicles?.vehicle_number||'مركبة'}));
+
+  const list = document.getElementById('notif-list');
+  const dot = document.getElementById('notif-dot');
+  if(!notifs.length){
+    list.innerHTML='<div class="notif-empty">لا توجد تنبيهات</div>';
+    dot.style.display='none';
+    return;
+  }
+  dot.style.display='block';
+  list.innerHTML = notifs.map(n=>`<div class="notif-item"><div class="nt">${n.t}</div><div class="ns">${n.s}</div></div>`).join('');
+}
+
+/* ─── PRINT ─── */
+function printSection(){ window.print(); }
+
+/* ─── INIT ─── */
+async function initApp(){
+  document.getElementById('pickup-date').valueAsDate = new Date();
+  document.getElementById('pickup-time').value = new Date().toTimeString().substring(0,5);
+  document.getElementById('mnt-date').valueAsDate = new Date();
+  document.getElementById('acc-date').valueAsDate = new Date();
+  loadDashboard();
+  loadNotifications();
+  loadVehiclesForSelects();
+}
+
+/* click outside modals to close */
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if(e.target===ov) ov.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
